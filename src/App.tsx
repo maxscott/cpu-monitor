@@ -4,22 +4,7 @@ import moment from 'moment';
 
 function App() {
 	// Container for chart data
-	const now = moment();
-	const [rawData, setRawData] = useState(new Array(56).fill(null).concat([
-		{
-			x: now.add(0, 'seconds').toDate(),
-			y: 1
-		}, {
-			x: now.add(10, 'seconds').toDate(),
-			y: 4
-		}, {
-			x: now.add(20, 'seconds').toDate(),
-			y: 3
-		}, {
-			x: now.add(30, 'seconds').toDate(),
-			y: 7
-		},
-	]));
+	const [rawData, setRawData] = useState(new Array(56).fill(null).concat([]));
 
 	const { data, options } =  {
 		data: {
@@ -27,17 +12,40 @@ function App() {
 			datasets: [{
 				label: 'CPU Usage',
 				data: rawData,
-				borderWidth: 1
+				borderWidth: 1,
+				backgroundColor: "rgba(0, 0, 255, 0.25)"
 			}]
 		},
 		options: {
+			animation: {
+				duration: 0
+			},
+			elements: {
+				line: {
+					tension: 0
+				},
+				point: {
+					radius: 0
+				}
+			},
 			xAxes: [{
 				type: 'time',
 				ticks: {
 					autoSkip: true,
-					maxTicksLimit: 20
+					maxTicksLimit: 20,
+					min: 0,
+					max: 1,
 				}
 			}],
+			scales: {
+				yAxes: [{
+					ticks: {
+						max: 1,
+						min: 0,
+						stepSize: 0.1
+					}
+				}]
+			},
 			layout: {
 				padding: {
 					left: 40,
@@ -54,28 +62,31 @@ function App() {
 		const newData = [...rawData];
 
 		// fetch new data
-		const randValue = Math.floor(Math.random()*7);
-		const newPoint =  {
-			x: moment().toDate(),
-			y: randValue < 4 ? 2 : randValue 
-		};
+		fetch("http://localhost:3001/cpu")
+			.then(res => res.json())
+			.then(result => {
 
-		// evict old data from copy
-		newData.shift()
+				// Prepare the cpu data
+				let cpuValue = result["cpu"];
+				cpuValue = Math.floor(cpuValue*100)/100;
+				const newPoint =  {
+					x: moment().toDate(),
+					y: cpuValue
+				};
 
-		// add new data to copy
-		newData.push(newPoint);
+				// evict old data/padding and add new data to copy
+				newData.shift()
+				newData.push(newPoint);
 
-		// set copy to state, triggering rerender
-		setRawData(newData);
+				// set copy to state, triggering rerender
+				setRawData(newData);
+			});
 	}
 
 	useEffect(() => {
-		const interval = setInterval(tick, 10000);
+		const interval = setInterval(tick, 2000);
 		return () => clearInterval(interval);
 	});
-
-	console.log("RENDER");
 
   return (
     <div className="h-screen bg-white">
@@ -88,10 +99,6 @@ function App() {
 				<Line
 					data={data}
 					options={options}/>
-				<button
-					className="bg-blue-400 text-white rounded-lg w-10"
-					onClick={tick}
-					>Tick</button>
 			</div>
     </div>
   );
