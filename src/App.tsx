@@ -1,11 +1,11 @@
-// import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import moment from 'moment';
 
 function App() {
 	// Container for chart data
 	const now = moment();
-	const rawData = new Array(56).fill(null).concat([
+	const [rawData, setRawData] = useState(new Array(56).fill(null).concat([
 		{
 			x: now.add(0, 'seconds').toDate(),
 			y: 1
@@ -19,7 +19,7 @@ function App() {
 			x: now.add(30, 'seconds').toDate(),
 			y: 7
 		},
-	]);
+	]));
 
 	const { data, options } =  {
 		data: {
@@ -41,6 +41,22 @@ function App() {
 		}
 	}
 
+	function tick() {
+		alert("Tick");
+		// shallow copy state
+
+		// fetch new data
+
+		// evict old data from copy
+
+		// add new data to copy
+
+		// set copy to state, triggering rerender
+		setRawData([...rawData]);
+	}
+
+	console.log("RENDER");
+
   return (
     <div className="h-screen bg-white">
       <header className="w-screen h-6 bg-gradient-to-r from-purple-800 to-blue-500 shadow-lg">
@@ -54,7 +70,7 @@ function App() {
 					options={options}/>
 				<button
 					className="bg-blue-400 text-white rounded-lg w-10"
-					onClick={() => alert('tick')}
+					onClick={tick}
 					>Tick</button>
 			</div>
     </div>
