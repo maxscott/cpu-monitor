@@ -1,9 +1,62 @@
+// import { useState, useEffect } from 'react';
+import { Line } from 'react-chartjs-2';
+import moment from 'moment';
+
 function App() {
+	// Container for chart data
+	const now = moment();
+	const rawData = new Array(56).fill(null).concat([
+		{
+			x: now.add(0, 'seconds').toDate(),
+			y: 1
+		}, {
+			x: now.add(10, 'seconds').toDate(),
+			y: 4
+		}, {
+			x: now.add(20, 'seconds').toDate(),
+			y: 3
+		}, {
+			x: now.add(30, 'seconds').toDate(),
+			y: 7
+		},
+	]);
+
+	const { data, options } =  {
+		data: {
+			labels: rawData.map(a => !a ? "" : moment(a.x).format("HH:MM:ss")),
+			datasets: [{
+				label: 'CPU Usage',
+				data: rawData,
+				borderWidth: 1
+			}]
+		},
+		options: {
+			xAxes: [{
+				type: 'time',
+				ticks: {
+					autoSkip: true,
+					maxTicksLimit: 20
+				}
+			}]
+		}
+	}
+
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-50 to-blue-100">
-      <header>
-        <h3 className="text-center">Coming Soon</h3>
+    <div className="h-screen bg-white">
+      <header className="w-screen h-6 bg-gradient-to-r from-purple-800 to-blue-500 shadow-lg">
+				<div className="text-center">
+					<span className="subpixel-antialiased text-white font-sans font-semibold text-xs">CPU Monitoring is here! 🎉</span>
+				</div>
       </header>
+			<div className="container">
+				<Line
+					data={data}
+					options={options}/>
+				<button
+					className="bg-blue-400 text-white rounded-lg w-10"
+					onClick={() => alert('tick')}
+					>Tick</button>
+			</div>
     </div>
   );
 }
