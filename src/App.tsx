@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import moment from 'moment';
 
@@ -37,23 +37,43 @@ function App() {
 					autoSkip: true,
 					maxTicksLimit: 20
 				}
-			}]
+			}],
+			layout: {
+				padding: {
+					left: 40,
+					right: 40,
+					top: 20,
+					bottom: 20
+				}
+			}
 		}
 	}
 
 	function tick() {
-		alert("Tick");
 		// shallow copy state
+		const newData = [...rawData];
 
 		// fetch new data
+		const randValue = Math.floor(Math.random()*7);
+		const newPoint =  {
+			x: moment().toDate(),
+			y: randValue < 4 ? 2 : randValue 
+		};
 
 		// evict old data from copy
+		newData.shift()
 
 		// add new data to copy
+		newData.push(newPoint);
 
 		// set copy to state, triggering rerender
-		setRawData([...rawData]);
+		setRawData(newData);
 	}
+
+	useEffect(() => {
+		const interval = setInterval(tick, 10000);
+		return () => clearInterval(interval);
+	});
 
 	console.log("RENDER");
 
