@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Chart from './Chart';
-import { Point, Nullable } from './Point';
+import { Point, Nullable } from './Models';
 import { PointService, MovingAverageService } from './Services';
 
 const config = {

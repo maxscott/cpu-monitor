@@ -1,4 +1,4 @@
-import { Point, Nullable } from './Point';
+import { Point, Nullable } from './Models';
 
 export class PointService {
   static async fetchPoint(): Promise<Point> {
