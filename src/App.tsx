@@ -1,61 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Line } from 'react-chartjs-2';
 import moment from 'moment';
+import Chart from './Chart';
 
 function App() {
-	// Container for chart data
-	const [rawData, setRawData] = useState(new Array(56).fill(null).concat([]));
+	// TODO configurable value
+	const windowSize = 3;
 
-	const { data, options } =  {
-		data: {
-			labels: rawData.map(a => !a ? "" : moment(a.x).format("HH:MM:ss")),
-			datasets: [{
-				label: 'CPU Usage',
-				data: rawData,
-				borderWidth: 1,
-				backgroundColor: "rgba(0, 0, 255, 0.25)"
-			}]
-		},
-		options: {
-			animation: {
-				duration: 0
-			},
-			elements: {
-				line: {
-					tension: 0
-				},
-				point: {
-					radius: 0
-				}
-			},
-			xAxes: [{
-				type: 'time',
-				ticks: {
-					autoSkip: true,
-					maxTicksLimit: 20,
-					min: 0,
-					max: 1,
-				}
-			}],
-			scales: {
-				yAxes: [{
-					ticks: {
-						max: 1,
-						min: 0,
-						stepSize: 0.1
-					}
-				}]
-			},
-			layout: {
-				padding: {
-					left: 40,
-					right: 40,
-					top: 20,
-					bottom: 20
-				}
-			}
-		}
-	}
+	const [rawData, setRawData] = useState(Array(60).fill(null));
+	const [movingAverage, setMovingAverage] = useState(Array(windowSize).fill(null));
+	const [movingWindow, setMovingWindow] = useState([]);
+	const [movingSum, setMovingSum] = useState(0);
 
 	function tick() {
 		// shallow copy state
@@ -84,7 +38,7 @@ function App() {
 	}
 
 	useEffect(() => {
-		const interval = setInterval(tick, 2000);
+		const interval = setInterval(() => tick(), 2000);
 		return () => clearInterval(interval);
 	});
 
@@ -96,9 +50,7 @@ function App() {
 				</div>
       </header>
 			<div className="container">
-				<Line
-					data={data}
-					options={options}/>
+				<Chart mainSeries={rawData} averageSeries={movingAverage} />
 			</div>
     </div>
   );
