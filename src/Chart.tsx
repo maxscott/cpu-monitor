@@ -22,7 +22,7 @@ function Chart({
 				label: 'CPU Average',
 				data: averageSeries,
 				borderWidth: 2,
-				borderColor: "red",
+				borderColor: "rgba(255, 0, 0, 0.5)",
 				backgroundColor: "rgba(0, 0, 0, 0)"
 			}
 		]
