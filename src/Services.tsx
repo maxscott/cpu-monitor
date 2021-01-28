@@ -1,10 +1,50 @@
-import { Point, Nullable } from './Models';
+import { Point, Alert, Nullable } from './Models';
 
 export class PointService {
-  static async fetchPoint(): Promise<Point> {
-		return fetch("http://localhost:3001/cpu")
+  url: string
+
+  constructor(url: string) {
+    this.url = url;
+  }
+
+  async fetchPoint(): Promise<Point> {
+		return fetch(this.url)
 			.then(res => res.json())
 			.then(result => Point.create(result["cpu"]));
+  }
+}
+
+export class AlertService {
+  threshold: number
+
+  constructor(threshold: number) {
+    this.threshold = threshold;
+  }
+
+  process(openAlert: Nullable<Alert>, point: Point): Nullable<Alert> {
+    if (point.y > this.threshold) {
+      if (openAlert) {
+
+        // still in the alert state
+        // return the open alert
+        return openAlert;
+      } else {
+
+        // newly in an alert state
+        // return the new open alert
+        return new Alert(point);
+      }
+    } else {
+      if (openAlert) {
+
+        // close and return the alert
+        return openAlert.close(point)
+      } else {
+
+        // no existing or created alert
+        return null;
+      }
+    }
   }
 }
 

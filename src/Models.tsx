@@ -12,4 +12,19 @@ export class Point {
   }
 }
 
+export class Alert {
+  start: Point
+  end: Nullable<Point>
+
+  constructor(start: Point) {
+    this.start = start;
+    this.end = null;
+  }
+
+  close(end: Point) {
+    this.end = end;
+    return this;
+  }
+}
+
 export type Nullable<T> = T | null;

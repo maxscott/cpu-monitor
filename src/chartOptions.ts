@@ -14,7 +14,7 @@ const options = {
 		type: 'time',
 		ticks: {
 			autoSkip: true,
-			maxTicksLimit: 20,
+			maxTicksLimit: 10,
 			min: 0,
 			max: 1,
 		}
@@ -24,7 +24,7 @@ const options = {
 			ticks: {
 				max: 1,
 				min: 0,
-				stepSize: 0.1
+				stepSize: 0.2
 			}
 		}]
 	},
