@@ -6,7 +6,7 @@ import { PointService, AlertService, MovingAverageService } from './Services';
 const config = {
 	pollInterval: 2000,
 	averageWindowSize: 3,
-	threshold: .2,
+	threshold: .18,
 	cpuUrl: "http://localhost:3001/cpu"
 };
 
@@ -45,24 +45,23 @@ function App() {
 			setMovingWindow(newMovingWindow);
 			setMovingAverage(newMovingAverage)
 
-			// const tickAlert: Nullable<Alert> = alertService.process(openAlert, point);
+			const tickAlert: Nullable<Alert> = alertService.process(openAlert, point);
 
-			// if (tickAlert && tickAlert.end) {
+			if (tickAlert && tickAlert.end) {
 
-			// 	// Alert is resolved
-			// 	setOpenAlert(null);
-			// 	setResolvedAlerts([...resolvedAlerts, tickAlert]);
-			// }
-			// else if (alert) {
+				// Alert is resolved
+				console.debug({ resolved: tickAlert });
+				setOpenAlert(null);
+				setResolvedAlerts([...resolvedAlerts, tickAlert]);
+			}
+			else if (tickAlert) {
+				// Alert is new
+				if (!openAlert) {
+					console.debug({ opened: tickAlert });
+				}
 
-			// 	// Alert is still open
-			// 	if (openAlert) {
-			// 		// alert === openAlert...
-			// 	} else {
-			// 		alert(
-			// 	}
-			// 	setOpenAlert(alert);
-			// }
+				setOpenAlert(tickAlert);
+			}
 		});
 	}
 
@@ -81,8 +80,21 @@ function App() {
 			<div className="container">
 				<Chart mainSeries={rawData} averageSeries={movingAverage} />
 			</div>
+
+			<h4>Open Alert!</h4>
+			{openAlert && <AlertListItem data={openAlert} /> }
+			<br />
+			<h4>Resolved Alerts</h4>
+			<ul>
+				{resolvedAlerts.map(a => <AlertListItem data={a} />)}
+			</ul>
     </div>
   );
 }
+
+function AlertListItem({ data }: { data: Alert }) {
+	return <div><p>{JSON.stringify(data)}</p></div>
+}
+
 
 export default App;
