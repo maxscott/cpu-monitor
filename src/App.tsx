@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import Chart from './Chart';
-import { Point } from './Point';
-type Nullable<T> = T | null;
+import { Point, Nullable } from './Point';
+import { PointService, MovingAverageService } from './Services';
+
+const config = {
+	pollInterval: 2000,
+	averageWindowSize: 3
+};
 
 function App() {
-	const windowSize = 5;
+	const maService = new MovingAverageService(config.averageWindowSize);
 
 	const [ movingAverage, setMovingAverage ] = useState(Array<Nullable<Point>>(60).fill(null));
 	const [ movingWindow, setMovingWindow ] = useState(Array<Point>());
@@ -12,46 +17,26 @@ function App() {
 	const [ rawData, setRawData ] = useState(Array<Nullable<Point>>(60).fill(null));
 
 	function tick() {
+		PointService.fetchPoint().then(point => {
 
-		// fetch new data
-		fetch("http://localhost:3001/cpu")
-			.then(res => res.json())
-			.then(result => {
+			// set new data, evicting oldest value
+			setRawData([...rawData.slice(1), point]);
 
-				const newPoint = Point.create(result["cpu"]);
+			// Update moving window, sum, and average
+			const [
+				newMovingSum,
+				newMovingWindow,
+				newMovingAverage
+			] = maService.process(movingSum, movingWindow, movingAverage, point);
 
-				// TODO hoist out of main logic
-				// shallow copy state
-				// evict old data/padding and add new data to copy
-				const newData = [...rawData];
-				newData.shift()
-				newData.push(newPoint);
-				setRawData(newData);
-
-				// Update moving window, sum, and average
-				let movingSumTemp = movingSum;
-				let movingWindowTmp = movingWindow;
-				let movingAverageTmp = movingAverage;
-
-			  movingWindowTmp.push(newPoint);
-				movingSumTemp += newPoint.y;
-				if (movingWindowTmp.length > windowSize) {
-					movingSumTemp -= movingWindowTmp.shift()?.y || 0;
-				}
-				setMovingSum(movingSumTemp);
-				setMovingWindow([...movingWindowTmp]);
-
-				if (movingWindowTmp.length === windowSize) {
-					movingAverageTmp.shift();
-					const val = Math.round(movingSumTemp / windowSize * 100)/100;
-					movingAverageTmp.push(Point.create(val));
-				}
-				setMovingAverage([...movingAverageTmp])
-			});
+			setMovingSum(newMovingSum);
+			setMovingWindow(newMovingWindow);
+			setMovingAverage(newMovingAverage)
+		});
 	}
 
 	useEffect(() => {
-		const interval = setInterval(() => tick(), 2000);
+		const interval = setInterval(() => tick(), config.pollInterval);
 		return () => clearInterval(interval);
 	});
 

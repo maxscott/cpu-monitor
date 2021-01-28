@@ -11,3 +11,5 @@ export class Point {
     return new Point(x, Math.floor(y * 100) / 100);
   }
 }
+
+export type Nullable<T> = T | null;
