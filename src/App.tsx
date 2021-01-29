@@ -7,8 +7,14 @@ const config = {
 	pollInterval: 2000,
 	averageWindowSize: 3,
 	threshold: .18,
+	minutesOverThreshold: 1,
 	cpuUrl: "http://localhost:3001/cpu"
 };
+
+// Service objects
+const maService = new MovingAverageService(config.averageWindowSize);
+const pointService = new PointService(config.cpuUrl);
+const alertService = new AlertService(config.threshold, config.minutesOverThreshold);
 
 function App() {
 	// Moving average state
@@ -22,11 +28,6 @@ function App() {
 	// Alert state
 	const [ resolvedAlerts, setResolvedAlerts ] = useState(Array<Alert>());
 	const [ openAlert, setOpenAlert ] = useState<Nullable<Alert>>(null);
-
-	// Service objects
-	const maService = new MovingAverageService(config.averageWindowSize);
-	const pointService = new PointService(config.cpuUrl);
-	const alertService = new AlertService(config.threshold);
 
 	function tick() {
 		pointService.fetchPoint().then(point => {
@@ -81,20 +82,40 @@ function App() {
 				<Chart mainSeries={rawData} averageSeries={movingAverage} />
 			</div>
 
-			<h4>Open Alert!</h4>
-			{openAlert && <AlertListItem data={openAlert} /> }
-			<br />
-			<h4>Resolved Alerts</h4>
-			<ul>
-				{resolvedAlerts.map(a => <AlertListItem data={a} />)}
-			</ul>
+			<div className="container mx-10">
+				<h4>Open Alert</h4>
+				{
+					openAlert && <span>{openAlert.start.x.toString()} {openAlert.start.y}</span>
+				}
+
+				<br />
+
+				<h1 className="text-center">Resolved Alerts</h1>
+
+				<table className="shadow-lg bg-white table-auto">
+					<thead>
+						<tr>
+							<th className="bg-blue-100 border text-left px-6 py-2 w-50">#</th>
+							<th className="bg-blue-100 border text-left px-6 py-2 w-100">Start</th>
+							<th className="bg-blue-100 border text-left px-6 py-2 w-100">End</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						{resolvedAlerts.map((a,i) => <AlertListItem data={a} i={i+1} />)}
+					</tbody>
+				</table>
+			</div>
     </div>
   );
 }
 
-function AlertListItem({ data }: { data: Alert }) {
-	return <div><p>{JSON.stringify(data)}</p></div>
+function AlertListItem({ data, i }: { data: Alert, i: number }) {
+	return (<tr>
+		<td className="border px-6 py-2">{i}</td>
+		<td className="border px-6 py-2">{data.start.x.toString()}</td>
+		<td className="border px-6 py-2">{data.end?.x?.toString()}</td>
+	</tr>)
 }
-
 
 export default App;

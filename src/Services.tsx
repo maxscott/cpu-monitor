@@ -16,9 +16,11 @@ export class PointService {
 
 export class AlertService {
   threshold: number
+  minutesOverThreshold: number
 
-  constructor(threshold: number) {
+  constructor(threshold: number, minutesOverThreshold: number) {
     this.threshold = threshold;
+    this.minutesOverThreshold = minutesOverThreshold;
   }
 
   process(openAlert: Nullable<Alert>, point: Point): Nullable<Alert> {
