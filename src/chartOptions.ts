@@ -27,14 +27,6 @@ const options = {
 				stepSize: 0.2
 			}
 		}]
-	},
-	layout: {
-		padding: {
-			left: 40,
-			right: 40,
-			top: 20,
-			bottom: 20
-		}
 	}
 }
 
