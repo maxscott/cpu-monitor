@@ -1,5 +1,5 @@
-import { Point, Alert, Nullable } from './Models';
-import config from './config';
+import { Point, Alert, Nullable } from '../models';
+import config from '../config';
 
 export async function fetchPoint() {
   const res = await fetch(config.cpuUrl);

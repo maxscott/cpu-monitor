@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useEffect } from 'react';
-import { Alert, Nullable, StateObject } from './Models';
-import { fetchPoint, processAlert, processAverage } from './Services';
-import config from './config';
+import { Alert, Nullable, StateObject } from '../models';
+import { fetchPoint, processAlert, processAverage } from '../services';
+import config from '../config';
 
 export default function useTick(
   state: StateObject,

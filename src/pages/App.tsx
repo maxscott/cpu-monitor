@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import Chart from './Chart';
-import { Point, Alert, Nullable, StateObject } from './Models';
-import useTick from './use-tick';
+import Chart from '../components/Chart';
+import { Point, Alert, Nullable, StateObject } from '../models';
+import useTick from '../hooks/UseTick';
 
 function App() {
   const [ state, setState ] = useState<StateObject>({
