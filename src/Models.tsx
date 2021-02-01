@@ -28,3 +28,15 @@ export class Alert {
 }
 
 export type Nullable<T> = T | null;
+
+export type StateObject = {
+  // Moving average state
+  movingAverage: Array<Nullable<Point>>,
+  movingWindow: Array<Point>,
+  movingSum: number,
+  // Main data series state
+  rawData: Array<Nullable<Point>>,
+  // Alert state
+  resolvedAlerts: Array<Alert>,
+  openAlert: Nullable<Alert>
+};

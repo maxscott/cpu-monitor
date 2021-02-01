@@ -1,83 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Chart from './Chart';
-import { Point, Alert, Nullable } from './Models';
-import { fetchPoint, processAlert, processAverage } from './Services';
-import config from './config';
+import { Point, Alert, Nullable, StateObject } from './Models';
+import useTick from './use-tick';
 
 function App() {
-  const [state, setState] = useState<{
-    movingAverage: Array<Nullable<Point>>,
-    movingWindow: Array<Point>,
-    movingSum: number,
-    rawData: Array<Nullable<Point>>,
-    resolvedAlerts: Array<Alert>,
-    openAlert: Nullable<Alert>
-  }>({
-    // Moving average state
+  const [ state, setState ] = useState<StateObject>({
     movingAverage: Array<Nullable<Point>>(60).fill(null),
     movingWindow: Array<Point>(),
     movingSum: 0,
-
-    // Main data series state
     rawData: Array<Nullable<Point>>(60).fill(null),
-
-    // Alert state
     resolvedAlerts: Array<Alert>(),
     openAlert: null
   });
 
-  // TODO: extract to custom hook (use-tick.tsx)
-  async function tick() {
-    const point = await fetchPoint();
-
-    // Update moving window, sum, and average
-    const [
-      newMovingSum,
-      newMovingWindow,
-      newMovingAverage
-    ] = processAverage(state.movingSum, state.movingWindow, state.movingAverage, point);
-
-    const tmpState = {
-      ...state,
-      rawData: [...state.rawData.slice(1), point],  // set new data, evicting oldest value
-      movingSum: newMovingSum,
-      movingWindow: newMovingWindow,
-      movingAverage: newMovingAverage
-    };
-
-    const tickAlert: Nullable<Alert> = processAlert(state.openAlert, point);
-
-    // Resolving an alert
-    if (tickAlert && tickAlert.end) {
-      setState({
-        ...tmpState,
-        openAlert: null,
-        resolvedAlerts: [...state.resolvedAlerts, tickAlert]
-      });
-    }
-    // Start/continue an alert
-    else if (tickAlert) {
-      if (!state.openAlert) {
-        console.debug({ opened: tickAlert });
-      }
-
-      setState({
-        ...tmpState,
-        openAlert: tickAlert
-      });
-    }
-    // Business as usual
-    else {
-      setState({
-        ...tmpState,
-      });
-    }
-  }
-
-  useEffect(() => {
-    const interval = setInterval(() => tick(), config.pollInterval);
-    return () => clearInterval(interval);
-  });
+  useTick(state, setState);
 
   return (
     <div className="h-screen bg-white">
