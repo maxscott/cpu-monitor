@@ -1,21 +1,10 @@
 import { useState, useEffect } from 'react';
 import Chart from './Chart';
 import { Point, Alert, Nullable } from './Models';
-import { PointService, AlertService, MovingAverageService } from './Services';
+import { fetchPoint, processAlert, processAverage } from './Services';
+import config from './config';
 
-const config = {
-	pollInterval: 2000,
-	averageWindowSize: 3,
-	threshold: .18,
-	minutesOverThreshold: 1,
-	cpuUrl: "http://localhost:3001/cpu"
-};
-
-// Service objects
-const maService = new MovingAverageService(config.averageWindowSize);
-const pointService = new PointService(config.cpuUrl);
-const alertService = new AlertService(config.threshold, config.minutesOverThreshold);
-
+// TODO: use one main state object, set at the end of each "tick"
 function App() {
 	// Moving average state
 	const [ movingAverage, setMovingAverage ] = useState(Array<Nullable<Point>>(60).fill(null));
@@ -29,8 +18,9 @@ function App() {
 	const [ resolvedAlerts, setResolvedAlerts ] = useState(Array<Alert>());
 	const [ openAlert, setOpenAlert ] = useState<Nullable<Alert>>(null);
 
+  // TODO: extract to custom hook (use-tick.tsx)
 	function tick() {
-		pointService.fetchPoint().then(point => {
+		fetchPoint().then(point => {
 
 			// set new data, evicting oldest value
 			setRawData([...rawData.slice(1), point]);
@@ -40,13 +30,13 @@ function App() {
 				newMovingSum,
 				newMovingWindow,
 				newMovingAverage
-			] = maService.process(movingSum, movingWindow, movingAverage, point);
+			] = processAverage(movingSum, movingWindow, movingAverage, point);
 
 			setMovingSum(newMovingSum);
 			setMovingWindow(newMovingWindow);
 			setMovingAverage(newMovingAverage)
 
-			const tickAlert: Nullable<Alert> = alertService.process(openAlert, point);
+			const tickAlert: Nullable<Alert> = processAlert(openAlert, point);
 
 			if (tickAlert && tickAlert.end) {
 

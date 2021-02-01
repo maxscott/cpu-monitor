@@ -1,81 +1,56 @@
 import { Point, Alert, Nullable } from './Models';
+import config from './config';
 
-export class PointService {
-  url: string
-
-  constructor(url: string) {
-    this.url = url;
-  }
-
-  async fetchPoint(): Promise<Point> {
-		return fetch(this.url)
-			.then(res => res.json())
-			.then(result => Point.create(result["cpu"]));
-  }
+export async function fetchPoint() {
+  const res = await fetch(config.cpuUrl);
+  const json = await res.json();
+  return Point.create(json["cpu"]);
 }
 
-export class AlertService {
-  threshold: number
-  minutesOverThreshold: number
+export function processAlert(openAlert: Nullable<Alert>, point: Point): Nullable<Alert> {
+  if (point.y > config.threshold) {
+    if (openAlert) {
 
-  constructor(threshold: number, minutesOverThreshold: number) {
-    this.threshold = threshold;
-    this.minutesOverThreshold = minutesOverThreshold;
-  }
-
-  process(openAlert: Nullable<Alert>, point: Point): Nullable<Alert> {
-    if (point.y > this.threshold) {
-      if (openAlert) {
-
-        // still in the alert state
-        // return the open alert
-        return openAlert;
-      } else {
-
-        // newly in an alert state
-        // return the new open alert
-        return new Alert(point);
-      }
+      // still in the alert state
+      // return the open alert
+      return openAlert;
     } else {
-      if (openAlert) {
 
-        // close and return the alert
-        return openAlert.close(point)
-      } else {
+      // newly in an alert state
+      // return the new open alert
+      return new Alert(point);
+    }
+  } else {
+    if (openAlert) {
 
-        // no existing or created alert
-        return null;
-      }
+      // close and return the alert
+      return openAlert.close(point)
+    } else {
+
+      // no existing or created alert
+      return null;
     }
   }
 }
 
-export class MovingAverageService {
-  windowSize: number
+export function processAverage(
+  movingSum: number,
+  movingWindow: Array<Point>,
+  movingAverage: Array<Nullable<Point>>,
+  point: Point
+): [number, Array<Point>, Array<Nullable<Point>>] {
+  movingWindow.push(point);
+  movingSum += point.y;
 
-  constructor(windowSize = 5) {
-    this.windowSize = windowSize;
+  if (movingWindow.length > config.averageWindowSize) {
+    movingSum -= movingWindow.shift()?.y || 0;
   }
 
-  process(
-    movingSum: number,
-    movingWindow: Array<Point>,
-    movingAverage: Array<Nullable<Point>>,
-    point: Point
-  ): [number, Array<Point>, Array<Nullable<Point>>] {
-    movingWindow.push(point);
-    movingSum += point.y;
-
-    if (movingWindow.length > this.windowSize) {
-      movingSum -= movingWindow.shift()?.y || 0;
-    }
-
-    if (movingWindow.length === this.windowSize) {
-      movingAverage.shift();
-      const val = Math.round(movingSum / this.windowSize * 100)/100;
-      movingAverage.push(Point.create(val));
-    }
-
-    return [movingSum, movingWindow, movingAverage];
+  if (movingWindow.length === config.averageWindowSize) {
+    movingAverage.shift();
+    const val = Math.round(movingSum / config.averageWindowSize * 100)/100;
+    movingAverage.push(Point.create(val));
   }
+
+  return [movingSum, movingWindow, movingAverage];
 }
