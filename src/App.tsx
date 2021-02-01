@@ -4,54 +4,65 @@ import { Point, Alert, Nullable } from './Models';
 import { fetchPoint, processAlert, processAverage } from './Services';
 import config from './config';
 
-// TODO: use one main state object, set at the end of each "tick"
 function App() {
-	// Moving average state
-	const [ movingAverage, setMovingAverage ] = useState(Array<Nullable<Point>>(60).fill(null));
-	const [ movingWindow, setMovingWindow ] = useState(Array<Point>());
-	const [ movingSum, setMovingSum ] = useState(0);
+  const [state, setState] = useState<{
+    movingAverage: Array<Nullable<Point>>,
+    movingWindow: Array<Point>,
+    movingSum: number,
+    rawData: Array<Nullable<Point>>,
+    resolvedAlerts: Array<Alert>,
+    openAlert: Nullable<Alert>
+  }>({
+		// Moving average state
+    movingAverage: Array<Nullable<Point>>(60).fill(null),
+    movingWindow: Array<Point>(),
+    movingSum: 0,
 
-	// Main data series state
-	const [ rawData, setRawData ] = useState(Array<Nullable<Point>>(60).fill(null));
+		// Main data series state
+    rawData: Array<Nullable<Point>>(60).fill(null),
 
-	// Alert state
-	const [ resolvedAlerts, setResolvedAlerts ] = useState(Array<Alert>());
-	const [ openAlert, setOpenAlert ] = useState<Nullable<Alert>>(null);
+		// Alert state
+    resolvedAlerts: Array<Alert>(),
+    openAlert: null
+  });
 
   // TODO: extract to custom hook (use-tick.tsx)
 	function tick() {
 		fetchPoint().then(point => {
-
-			// set new data, evicting oldest value
-			setRawData([...rawData.slice(1), point]);
 
 			// Update moving window, sum, and average
 			const [
 				newMovingSum,
 				newMovingWindow,
 				newMovingAverage
-			] = processAverage(movingSum, movingWindow, movingAverage, point);
+			] = processAverage(state.movingSum, state.movingWindow, state.movingAverage, point);
 
-			setMovingSum(newMovingSum);
-			setMovingWindow(newMovingWindow);
-			setMovingAverage(newMovingAverage)
+      setState({
+        ...state,
+        rawData: [...state.rawData.slice(1), point],  // set new data, evicting oldest value
+        movingSum: newMovingSum,
+        movingWindow: newMovingWindow,
+        movingAverage: newMovingAverage
+      });
 
-			const tickAlert: Nullable<Alert> = processAlert(openAlert, point);
+			const tickAlert: Nullable<Alert> = processAlert(state.openAlert, point);
 
 			if (tickAlert && tickAlert.end) {
 
 				// Alert is resolved
-				console.debug({ resolved: tickAlert });
-				setOpenAlert(null);
-				setResolvedAlerts([...resolvedAlerts, tickAlert]);
+        setState({
+          ...state,
+          openAlert: null,
+          resolvedAlerts: [...state.resolvedAlerts, tickAlert] 
+        });
 			}
 			else if (tickAlert) {
 				// Alert is new
-				if (!openAlert) {
+				if (!state.openAlert) {
 					console.debug({ opened: tickAlert });
 				}
 
-				setOpenAlert(tickAlert);
+        setState({ ...state, openAlert: tickAlert });
 			}
 		});
 	}
@@ -66,22 +77,22 @@ function App() {
 			<Header />
 
 			<div className="container m-auto mt-8">
-				<Chart mainSeries={rawData} averageSeries={movingAverage} />
+				<Chart mainSeries={state.rawData} averageSeries={state.movingAverage} />
 			</div>
 
 			<div className="container mx-auto mt-8">
 				{
-					openAlert
+					state.openAlert
 					? <Card 
 							color="red"
 							header="Alert Opened"
-							body={"Alert began at " + openAlert.start.x.toString()}/>
+							body={"Alert began at " + state.openAlert.start.x.toString()}/>
 					:	<Card color="red" header="No Open Alerts" />
 				}
 
 				<br />
 
-				{ resolvedAlerts && <AlertTable data={resolvedAlerts} /> }
+				{ state.resolvedAlerts && <AlertTable data={state.resolvedAlerts} /> }
 
 			</div>
     </div>
