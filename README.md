@@ -1,27 +1,32 @@
-# CPU Monitor Mini-App
+## CPU Monitor Mini-App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+![screenshot](./screenshot.png)
 
-In the project directory, you can run:
+### Future Improvements
 
-### `npm start`
+- Improve alerting logic (above cpu threshold *for a specific amount of time* to trigger, vice versa to resolve)
+- Create a better testing story, specifically, unit testing the `services/index.tsx` methods and `hooks/useTick.tsx`, as well as at least one integration test against `pages/App.tsx` (beyond the boilerplate test currently there.
 
-Runs the app in the development mode.\
+### Start app
+
+#### `npm install`
+
+Installs dependencies.
+Might take a bit first time CRACO/PostCSS/Tailwind
+
+#### `npm start`
+
+Runs the app in the development mode.
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### Server Instructions
 
-# Dependencies
-
-## Server endpoint localhost:3001/cpu
-
+The app expects an endpoint at localhost:3001/cpu. This address is configurable in `config.tsx` as well as via environment variable `CPU_URL`. 
 This enable the app to poll for the lastest cpu usage. The server expects a json response `{ cpu: <value: number> }`.
 
-## Example NodeJS (Express) Server
-
+#### Example NodeJS (Express) Server
 ```
 const express = require('express');
 const os = require('os');
@@ -44,14 +49,7 @@ app.listen(port, () => {
 });
 ```
 
-## Install / Run Server
+### Install & Run Sample Server
 
-After placing in "index.js" or similar, run:
-
-### `npm install express cors --save`
-
-and then
-
-### `node index.js`
-
-🤖
+#### `npm install express cors --save`
+#### `node index.js`
