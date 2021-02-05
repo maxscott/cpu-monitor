@@ -3,3 +3,12 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
+import 'jest-canvas-mock';
+
+jest.mock('react-chartjs-2', () => ({
+  Bar: () => null, // add any additional chart types here
+  Line: () => {
+    console.debug("Mocked one line chart");
+    return null;
+  }
+}));
