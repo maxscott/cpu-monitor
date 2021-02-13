@@ -11,6 +11,10 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ### Start app
 
+#### `cp .env.sample .env`
+
+Configuration is derived from environment variables, so a sample set of environment variables have been provided.
+
 #### `npm install`
 
 Installs dependencies.
